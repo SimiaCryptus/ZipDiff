@@ -1,0 +1,23 @@
+plugins {
+    kotlin("jvm")
+}
+
+java {
+    toolchain {
+         // Must match zipdiff-plugin and the Kotlin jvmTarget set in the root build
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+dependencies {
+    implementation("org.apache.commons:commons-compress:1.26.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
+    implementation("org.json:json:20230227")
+
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
