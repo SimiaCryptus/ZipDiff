@@ -5,7 +5,7 @@ plugins {
      // Gradle 9.6 exposes kotlin-stdlib 2.3.21 (metadata 2.3.0) on the plugin
      // compile classpath via gradleApi(). The Kotlin compiler must be new enough
      // to read that metadata: 1.9.x reads <= 2.0.0, 2.2.x reads <= 2.3.0.
-     kotlin("jvm") version "2.2.20" apply false
+     kotlin("jvm") version "2.4.10" apply false
 }
 
 allprojects {
