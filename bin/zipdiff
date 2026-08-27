@@ -1,35 +1,32 @@
 #!/usr/bin/env bash
 #
-# Launcher for Cognotik CLI tools (a "swiss army" launcher).
+# Launcher for the zipdiff CLI.
 #
-# Works both from a source checkout (cli/bin/cognotik) and as a standalone
-# download anywhere on your machine (it will fetch a released fat jar).
+# Works both from a source checkout (zipdiff-core/build/libs) and as a
+# standalone download anywhere on your machine (it will fetch a released
+# fat jar).
 #
 # Usage:
-#   ./cognotik <action> [options] [--] [args passed to the selected CLI...]
-#
-# Actions:
-#   fileserver, fs   -> com.simiacryptus.cognotik.cli.FileServerCli
-#   keys             -> com.simiacryptus.cognotik.cli.ApiKeysCli
-#   docops           -> com.simiacryptus.cognotik.cli.DocOpsCli
-#   autofix          -> com.simiacryptus.cognotik.cli.AutoFixCli
+#   ./zipdiff [options] [--] [args passed to the zipdiff CLI...]
 #
 # Options:
-#   --build      Force a rebuild (:cli:shadowJar). Source checkout only.
+#   --build      Force a rebuild (:zipdiff-core:shadowJar). Source checkout only.
 #   --no-build   Never build or download; fail if no jar is available.
 #   --update     Re-download the release jar (standalone mode).
 #   --where      Print the jar/mode that would be used, then exit.
 #   -h, --help   Show this help.
 #
 # Environment:
-#   JAVA_HOME         If set, $JAVA_HOME/bin/java is used.
-#   JAVA_OPTS         Extra JVM options (word-split, e.g. "-Xmx2g -Dfoo=bar").
-#   COGNOTIK_JAR      Path to an existing *-all.jar; skips discovery/build entirely.
-#   COGNOTIK_HOME     Cache dir for downloads (default: ${XDG_CACHE_HOME:-~/.cache}/cognotik).
-#   COGNOTIK_REPO     GitHub repo for releases (default: SimiaCryptus/Cognotik).
-#   COGNOTIK_VERSION  Release tag to download (default: latest).
+#   JAVA_HOME        If set, $JAVA_HOME/bin/java is used.
+#   JAVA_OPTS        Extra JVM options (word-split, e.g. "-Xmx2g -Dfoo=bar").
+#   ZIPDIFF_JAR      Path to an existing *-all.jar; skips discovery/build entirely.
+#   ZIPDIFF_HOME     Cache dir for downloads (default: ${XDG_CACHE_HOME:-~/.cache}/zipdiff).
+#   ZIPDIFF_REPO     GitHub repo for releases (default: SimiaCryptus/zipdiff).
+#   ZIPDIFF_VERSION  Release tag to download (default: latest).
 
 set -Eeuo pipefail
+
+MAIN_CLASS="io.cognotik.zipdiff.cli.ZipdiffCli"
 
 # --- Locate ourselves (resolving symlinks) so the script is CWD-independent ----
 self="${BASH_SOURCE[0]}"
@@ -39,50 +36,17 @@ while [[ -L "$self" ]]; do
 done
 SCRIPT_DIR="$(cd -- "$(dirname -- "$self")" && pwd -P)"
 
-# Walk up looking for a real checkout instead of assuming cli/bin/.
-find_project_root() {
-local dir="$SCRIPT_DIR"
-while :; do
- if [[ -d "$dir/cli" ]] \
-    && { [[ -f "$dir/settings.gradle.kts" ]] || [[ -f "$dir/settings.gradle" ]]; }; then
-   printf '%s\n' "$dir"; return 0
- fi
- [[ "$dir" == "/" ]] && return 1
- dir="$(dirname -- "$dir")"
-done
-}
-CACHE_DIR="${COGNOTIK_HOME:-${XDG_CACHE_HOME:-$HOME/.cache}/cognotik}/jars"
-PROJECT_ROOT=""
-if PROJECT_ROOT="$(find_project_root)"; then
-LIBS_DIR="$PROJECT_ROOT/cli/build/libs"
-else
-PROJECT_ROOT=""            # standalone: download a release jar instead
-LIBS_DIR="$CACHE_DIR"
-fi
-REPO="${COGNOTIK_REPO:-SimiaCryptus/Cognotik}"
-VERSION="${COGNOTIK_VERSION:-latest}"
-
-log() { printf 'cognotik: %s\n' "$*" >&2; }
+log() { printf 'zipdiff: %s\n' "$*" >&2; }
 die() { log "$*"; exit 1; }
 have() { command -v "$1" >/dev/null 2>&1; }
 
 usage() {
   awk 'NR>1 { if (/^#/) { sub(/^# ?/, ""); print; next } else exit }' "$self"
 }
-# --- Required action selects the main class -------------------------------------
+
 case "${1:-}" in
    -h|--help) usage; exit 0 ;;
 esac
-[[ $# -gt 0 ]] || { usage; die "missing required action (fileserver|fs, keys, docops, autofix)"; }
-ACTION="$1"; shift
-case "$ACTION" in
-   fileserver|fs) MAIN_CLASS="com.simiacryptus.cognotik.cli.FileServerCli" ;;
-   keys)          MAIN_CLASS="com.simiacryptus.cognotik.cli.ApiKeysCli" ;;
-   docops)        MAIN_CLASS="com.simiacryptus.cognotik.cli.DocOpsCli" ;;
-   autofix)       MAIN_CLASS="com.simiacryptus.cognotik.cli.AutoFixCli" ;;
-   *) die "unknown action: '$ACTION' (expected: fileserver|fs, keys, docops, autofix)" ;;
-esac
-
 
 # --- Parse our own options; stop at the first unknown arg ----------------------
 build_mode=auto
@@ -108,11 +72,11 @@ else
   JAVA_BIN="$(command -v java)"
 fi
 
-# --- Are we inside a Cognotik source checkout? ---------------------------------
+# --- Are we inside a zipdiff source checkout? ----------------------------------
 find_project_root() {
   local dir="$SCRIPT_DIR"
   while :; do
-    if [[ -d "$dir/cli" ]] \
+    if [[ -d "$dir/zipdiff-core" ]] \
        && { [[ -f "$dir/settings.gradle.kts" ]] || [[ -f "$dir/settings.gradle" ]]; }; then
       printf '%s\n' "$dir"; return 0
     fi
@@ -121,11 +85,15 @@ find_project_root() {
   done
 }
 
+CACHE_DIR="${ZIPDIFF_HOME:-${XDG_CACHE_HOME:-$HOME/.cache}/zipdiff}/jars"
+REPO="${ZIPDIFF_REPO:-SimiaCryptus/zipdiff}"
+VERSION="${ZIPDIFF_VERSION:-latest}"
+
 PROJECT_ROOT=""
 if PROJECT_ROOT="$(find_project_root)"; then
-  LIBS_DIR="$PROJECT_ROOT/cli/build/libs"
+  LIBS_DIR="$PROJECT_ROOT/zipdiff-core/build/libs"
 else
-  PROJECT_ROOT=""
+  PROJECT_ROOT=""            # standalone: download a release jar instead
   LIBS_DIR="$CACHE_DIR"
 fi
 
@@ -133,8 +101,8 @@ fi
 build() {
   local gradlew="$PROJECT_ROOT/gradlew"
   [[ -x "$gradlew" ]] || die "gradle wrapper not found or not executable: $gradlew"
-  log "building :cli:shadowJar ..."
-  ( cd -- "$PROJECT_ROOT" && "$gradlew" :cli:shadowJar ) || die "build failed"
+  log "building :zipdiff-core:shadowJar ..."
+  ( cd -- "$PROJECT_ROOT" && "$gradlew" :zipdiff-core:shadowJar ) || die "build failed"
 }
 
 # --- Download (standalone mode) ------------------------------------------------
@@ -163,7 +131,7 @@ download_jar() {
         | grep -o '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]*"' \
         | sed 's/.*"\(https[^"]*\)"$/\1/' \
         | grep -E -- '-all\.jar$' | head -n1)" || true
-  [[ -n "$url" ]] || die "no *-all.jar asset in the $VERSION release of $REPO; clone the repo and use --build, or set COGNOTIK_JAR"
+  [[ -n "$url" ]] || die "no *-all.jar asset in the $VERSION release of $REPO; clone the repo and use --build, or set ZIPDIFF_JAR"
   mkdir -p -- "$CACHE_DIR"
   tmp="$(mktemp "$CACHE_DIR/.download.XXXXXX")"
   log "downloading ${url##*/} -> $CACHE_DIR"
@@ -189,10 +157,10 @@ find_jar() {
 
 # --- Pick a jar ----------------------------------------------------------------
 JAR=""
-if [[ -n "${COGNOTIK_JAR:-}" ]]; then
-  [[ -f "$COGNOTIK_JAR" ]] || die "COGNOTIK_JAR does not exist: $COGNOTIK_JAR"
-  JAR="$COGNOTIK_JAR"
-  mode="explicit (COGNOTIK_JAR)"
+if [[ -n "${ZIPDIFF_JAR:-}" ]]; then
+  [[ -f "$ZIPDIFF_JAR" ]] || die "ZIPDIFF_JAR does not exist: $ZIPDIFF_JAR"
+  JAR="$ZIPDIFF_JAR"
+  mode="explicit (ZIPDIFF_JAR)"
 elif [[ -n "$PROJECT_ROOT" ]]; then
   mode="source checkout ($PROJECT_ROOT)"
   if [[ "$build_mode" == force ]]; then
@@ -208,7 +176,7 @@ elif [[ -n "$PROJECT_ROOT" ]]; then
 else
   mode="standalone (cache: $CACHE_DIR)"
   if [[ "$build_mode" == force ]]; then
-    die "--build requires a Cognotik source checkout; this script is running standalone from $SCRIPT_DIR"
+    die "--build requires a zipdiff source checkout; this script is running standalone from $SCRIPT_DIR"
   fi
   if [[ "$do_update" == yes ]] || ! JAR="$(find_jar "$CACHE_DIR")"; then
     if [[ "$build_mode" == never ]]; then
