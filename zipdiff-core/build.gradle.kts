@@ -13,7 +13,7 @@ java {
 
 dependencies {
     implementation("org.apache.commons:commons-compress:1.28.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.22.2")
     implementation("org.json:json:20260814")
 
     testImplementation(platform("org.junit:junit-bom:6.1.3"))
