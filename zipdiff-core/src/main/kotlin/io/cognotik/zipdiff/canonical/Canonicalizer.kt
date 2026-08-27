@@ -84,7 +84,6 @@ class Canonicalizer {
 
                     // Strip extra fields and comments as final step after property configuration
                     newEntry.extraFields = emptyArray()
-                    newEntry.setExtra(null)
                     newEntry.comment = null
 
                     zipOut.putArchiveEntry(newEntry)

@@ -86,7 +86,7 @@ find_project_root() {
 }
 
 CACHE_DIR="${ZIPDIFF_HOME:-${XDG_CACHE_HOME:-$HOME/.cache}/zipdiff}/jars"
-REPO="${ZIPDIFF_REPO:-SimiaCryptus/zipdiff}"
+REPO="${ZIPDIFF_REPO:-SimiaCryptus/ZipDiff}"
 VERSION="${ZIPDIFF_VERSION:-latest}"
 
 PROJECT_ROOT=""
