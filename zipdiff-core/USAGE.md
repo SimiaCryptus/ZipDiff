@@ -1,3 +1,5 @@
+
+
 ```shell
 ZIPDIFF=/home/andrew/code/Zip-Diff/zipdiff/zipdiff-core/build/libs/zipdiff-cli-1.0.0-SNAPSHOT-all.jar
 
@@ -17,6 +19,7 @@ java -jar $ZIPDIFF apply-chain base.zip final.zip step1.patch.zp step2.patch.zp
 java -jar $ZIPDIFF sign-extract signed-canonical.zip mySchemeId --output-dir ./sig
 java -jar $ZIPDIFF sign-apply canonical.zip ./sig/mySchemeId.sig.json
 ```
+
 
 ```shell
 # Produce a zip archive of the working tree at a given git commit.
