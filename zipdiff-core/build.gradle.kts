@@ -1,5 +1,8 @@
+
 plugins {
+    application
     kotlin("jvm")
+     id("com.gradleup.shadow") version "9.3.0"
 }
 
 java {
@@ -20,4 +23,25 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+application {
+    mainClass.set("io.cognotik.zipdiff.cli.ZipdiffCli")
+}
+tasks.jar {
+     manifest {
+         attributes["Main-Class"] = "io.cognotik.zipdiff.cli.ZipdiffCli"
+     }
+}
+tasks.shadowJar {
+     archiveBaseName.set("zipdiff-cli")
+     archiveClassifier.set("all")
+     archiveVersion.set(project.version.toString())
+     mergeServiceFiles()
+     manifest {
+         attributes["Main-Class"] = "io.cognotik.zipdiff.cli.ZipdiffCli"
+     }
+}
+tasks.build {
+     dependsOn(tasks.shadowJar)
 }
